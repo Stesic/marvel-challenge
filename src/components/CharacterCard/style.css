@@ -1,0 +1,8 @@
+.character-card {
+  background: #fff;
+  box-shadow: rgba(0, 0, 0, 0.56) 0px 22px 70px 4px;
+}
+
+.character-card-select-star {
+  cursor: pointer;
+}
