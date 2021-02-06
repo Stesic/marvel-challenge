@@ -14,13 +14,13 @@ import Layout from "../../components/Layout";
 import "./style.css";
 
 const CharacterPage = () => {
-  const [characterList, setCharacterList] = useState();
+  const [characterList, setCharacterList] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCharacters, setTotalCharacters] = useState(0);
   const [selectedLimit, setSelectedLimit] = useState(false);
   const [showSpinner, setShowSpinner] = useState(false);
 
-  const [selecteddCharacterList, setSelectedCharacterList] = useState(
+  const [selectedCharacterList, setSelectedCharacterList] = useState(
     storage.load(KEYS.SELECTED_CHARACTER_LIST) || []
   );
   const getCharacters = async (limit, offset) => {
@@ -47,6 +47,7 @@ const CharacterPage = () => {
   };
 
   useEffect(() => {
+    //get initial characters
     getCharacters(20, 0);
   }, []);
 
@@ -60,7 +61,7 @@ const CharacterPage = () => {
   }, [selectedLimit]);
 
   if (!characterList) {
-    return <p>Loading...</p>;
+    return <p style={{ color: "#fff" }}>Loading...</p>;
   }
 
   const characterListIsEmpty = !characterList.length;
@@ -69,27 +70,26 @@ const CharacterPage = () => {
       {selectedLimit && (
         <InfoMessage title="You already selected maximum characters - 5" />
       )}
+
       <div className="character-grid-container">
         <SearchInput handleSearch={handleSearch} showSpinner={showSpinner} />
-        {!characterListIsEmpty &&
-          characterList.map((character) => (
-            <CharacterCard
-              setSelectedLimit={setSelectedLimit}
-              key={character.id}
-              character={character}
-              setSelectedCharacterList={setSelectedCharacterList}
-            />
-          ))}
-
-        {characterListIsEmpty &&
-          selecteddCharacterList.map((character) => (
-            <CharacterCard
-              setSelectedLimit={setSelectedLimit}
-              key={character.id}
-              character={character}
-              setSelectedCharacterList={setSelectedCharacterList}
-            />
-          ))}
+        {characterListIsEmpty
+          ? selectedCharacterList.map((character) => (
+              <CharacterCard
+                setSelectedLimit={setSelectedLimit}
+                key={character.id}
+                character={character}
+                setSelectedCharacterList={setSelectedCharacterList}
+              />
+            ))
+          : characterList.map((character) => (
+              <CharacterCard
+                setSelectedLimit={setSelectedLimit}
+                key={character.id}
+                character={character}
+                setSelectedCharacterList={setSelectedCharacterList}
+              />
+            ))}
       </div>
       {!characterListIsEmpty && (
         <Pagination
@@ -105,7 +105,7 @@ const CharacterPage = () => {
           }
           total={totalCharacters}
           current={currentPage}
-          onChange={(current, pageSize) => {
+          onChange={(current) => {
             setCurrentPage(current);
             const offset = current === 1 ? 0 : current * 20;
             getCharacters(20, offset);

@@ -6,7 +6,7 @@
   row-gap: 40px;
   column-gap: 20px;
   justify-content: center;
-  margin-top: 50px;
+  margin: 50px auto 100px;
 }
 
 .rc-pagination {
