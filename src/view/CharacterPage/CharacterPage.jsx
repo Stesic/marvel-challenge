@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Pagination from "rc-pagination";
 import { debounce, isEmpty } from "lodash";
 
 import CharacterCard from "../../components/CharacterCard/CharacterCard";
-import {
-  fetchCharacters,
-  searchCharacters,
-} from "../../library/service/characters_services";
+import { fetchCharacters } from "../../library/service/characters_services";
 import { KEYS, storage } from "../../library/storage";
 
 import InfoMessage from "../../components/InfoMessage/InfoMessage";
@@ -25,33 +22,13 @@ const CharacterPage = () => {
   const [selectedCharacterList, setSelectedCharacterList] = useState(
     storage.load(KEYS.SELECTED_CHARACTER_LIST) || []
   );
-  const getCharacters = async (limit, offset) => {
-    const data = await fetchCharacters(limit, offset);
+  const getCharacters = async (limit, offset, searchValue = "") => {
+    const data = await fetchCharacters(limit, offset, searchValue);
     const { totalCharacters, characterList } = data;
+    setSearchQuery(searchValue);
     setCharacterList(characterList);
     setTotalCharacters(totalCharacters);
-  };
-
-  const delayedHandleSearch = debounce(async (searchValue) => {
-    if (searchValue) {
-      setSearchQuery(searchValue);
-      //error when call api with empty string
-      const data = await searchCharacters(searchValue, 20, 0);
-      setTotalCharacters(data.totalCharacters);
-      setShowSpinner(false);
-      setCharacterList(data.characterList);
-    } else {
-      setShowSpinner(false);
-      setCurrentPage(1);
-      getCharacters(20, 0);
-    }
-  }, 1000);
-
-  const handleSearch = (ev) => {
-    ev.preventDefault();
-    setShowSpinner(true);
-    const searchValue = ev.target.value.trim();
-    delayedHandleSearch(searchValue);
+    setShowSpinner(false);
   };
 
   useEffect(() => {
@@ -68,6 +45,25 @@ const CharacterPage = () => {
     }
   }, [selectedLimit]);
 
+  const debounceSearch = useRef(
+    debounce((searchValue) => {
+      getCharacters(20, 0, searchValue);
+    }, 1000)
+  );
+
+  useEffect(
+    () => {
+      if (searchQuery) {
+        setShowSpinner(true);
+        debounceSearch.current(searchQuery);
+      } else {
+        getCharacters(20, 0);
+        setCurrentPage(1);
+      }
+    },
+    [searchQuery] // Only call effect if debounced search term changes
+  );
+
   if (!characterList) {
     return <p style={{ color: "#fff" }}>Loading...</p>;
   }
@@ -82,7 +78,9 @@ const CharacterPage = () => {
       <div className="character-grid-container">
         <SearchInput
           placeholder="Search characters..."
-          handleSearch={handleSearch}
+          handleSearch={(ev) => {
+            setSearchQuery(ev.target.value);
+          }}
           showSpinner={showSpinner}
         />
         {characterListIsEmpty
@@ -120,13 +118,7 @@ const CharacterPage = () => {
           onChange={async (current) => {
             setCurrentPage(current);
             const offset = current === 1 ? 0 : current * 20;
-            if (searchQuery) {
-              const data = await searchCharacters(searchQuery, 20, offset);
-              setTotalCharacters(data.totalCharacters);
-              setCharacterList(data.characterList);
-            } else {
-              getCharacters(20, offset);
-            }
+            getCharacters(20, offset, searchQuery);
           }}
         />
       )}

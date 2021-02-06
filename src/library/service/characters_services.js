@@ -1,32 +1,22 @@
 import { API } from "../api/api";
 import Character from "../models/Character";
 
-const handleApiRequest = async (path) => {
-  const response = await API.get(path);
-  const characterList = response.data.results.map(character => (new Character(character)));
-  const totalCharacters = Math.floor(response.data.total / 20) * 20; // to ensure pagination work properly
 
-  return {
-    characterList,
-    totalCharacters,
-  }
-}
 
-const fetchCharacters = async (limit = 20, offset = 0) => {
+const fetchCharacters = async (limit = 20, offset = 0, searchQuery = "") => {
   try {
-    const path = `/characters?limit=${limit}&offset=${offset}`
-    return handleApiRequest(path)
-  } catch (error) {
-    console.log(error);
-  }
-};
+    let path = `/characters?limit=${limit}&offset=${offset}`
+    if (searchQuery) {
+      path = path.concat(`&nameStartsWith=${searchQuery}`);
+    }
+    const response = await API.get(path);
+    const characterList = response.data.results.map(character => (new Character(character)));
+    const totalCharacters = Math.floor(response.data.total / 20) * 20; // to ensure pagination work properly
 
-const searchCharacters = async (searchQuery = "", limit = 20, offset = 0) => {
-  try {
-
-    const path = `/characters?nameStartsWith=${searchQuery}&limit=${limit}&offset=${offset}`
-    return handleApiRequest(path)
-
+    return {
+      characterList,
+      totalCharacters,
+    }
   } catch (error) {
     console.log(error);
   }
@@ -34,4 +24,6 @@ const searchCharacters = async (searchQuery = "", limit = 20, offset = 0) => {
 
 
 
-export { fetchCharacters, searchCharacters };
+
+
+export { fetchCharacters };
