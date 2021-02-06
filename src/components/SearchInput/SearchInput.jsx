@@ -2,12 +2,12 @@ import React from "react";
 
 import "./style.css";
 
-const SearchInput = ({ handleSearch, showSpinner }) => {
+const SearchInput = ({ placeholder, handleSearch, showSpinner }) => {
   return (
     <div className="search-input-container">
       <input
-        placeholder="Search characters..."
-        onInput={handleSearch}
+        placeholder={placeholder}
+        onChange={handleSearch}
         className="search-input"
       />
       <div

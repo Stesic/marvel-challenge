@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Pagination from "rc-pagination";
+import { debounce, isEmpty } from "lodash";
 
 import CharacterCard from "../../components/CharacterCard/CharacterCard";
 import {
@@ -15,6 +16,7 @@ import "./style.css";
 
 const CharacterPage = () => {
   const [characterList, setCharacterList] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCharacters, setTotalCharacters] = useState(0);
   const [selectedLimit, setSelectedLimit] = useState(false);
@@ -30,20 +32,26 @@ const CharacterPage = () => {
     setTotalCharacters(totalCharacters);
   };
 
+  const delayedHandleSearch = debounce(async (searchValue) => {
+    if (searchValue) {
+      setSearchQuery(searchValue);
+      //error when call api with empty string
+      const data = await searchCharacters(searchValue, 20, 0);
+      setTotalCharacters(data.totalCharacters);
+      setShowSpinner(false);
+      setCharacterList(data.characterList);
+    } else {
+      setShowSpinner(false);
+      setCurrentPage(1);
+      getCharacters(20, 0);
+    }
+  }, 1000);
+
   const handleSearch = (ev) => {
     ev.preventDefault();
     setShowSpinner(true);
-    setTimeout(async () => {
-      const searchValue = ev.target.value.trim();
-      if (searchValue) {
-        //error when call api with empty string
-        const data = await searchCharacters(ev.target.value, 20, 0);
-        setCharacterList(data);
-      } else {
-        getCharacters(20, 0);
-      }
-      setShowSpinner(false);
-    }, 1000); //debounce
+    const searchValue = ev.target.value.trim();
+    delayedHandleSearch(searchValue);
   };
 
   useEffect(() => {
@@ -64,7 +72,7 @@ const CharacterPage = () => {
     return <p style={{ color: "#fff" }}>Loading...</p>;
   }
 
-  const characterListIsEmpty = !characterList.length;
+  const characterListIsEmpty = isEmpty(characterList);
   return (
     <Layout>
       {selectedLimit && (
@@ -72,7 +80,11 @@ const CharacterPage = () => {
       )}
 
       <div className="character-grid-container">
-        <SearchInput handleSearch={handleSearch} showSpinner={showSpinner} />
+        <SearchInput
+          placeholder="Search characters..."
+          handleSearch={handleSearch}
+          showSpinner={showSpinner}
+        />
         {characterListIsEmpty
           ? selectedCharacterList.map((character) => (
               <CharacterCard
@@ -105,10 +117,16 @@ const CharacterPage = () => {
           }
           total={totalCharacters}
           current={currentPage}
-          onChange={(current) => {
+          onChange={async (current) => {
             setCurrentPage(current);
             const offset = current === 1 ? 0 : current * 20;
-            getCharacters(20, offset);
+            if (searchQuery) {
+              const data = await searchCharacters(searchQuery, 20, offset);
+              setTotalCharacters(data.totalCharacters);
+              setCharacterList(data.characterList);
+            } else {
+              getCharacters(20, offset);
+            }
           }}
         />
       )}
