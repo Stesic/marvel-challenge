@@ -6,12 +6,11 @@ import Character from "../models/Character";
 const fetchCharacters = async (limit = 20, offset = 0, searchQuery = "") => {
   try {
     let path = `/characters?limit=${limit}&offset=${offset}`
-    if (searchQuery) {
-      path = path.concat(`&nameStartsWith=${searchQuery}`);
-    }
+    searchQuery && (path = path.concat(`&nameStartsWith=${searchQuery}`));
+
     const response = await API.get(path);
     const characterList = response.data.results.map(character => (new Character(character)));
-    const totalCharacters = Math.floor(response.data.total / 20) * 20; // to ensure pagination work properly
+    const totalCharacters = Math.floor(response.data.total / 20) * 20;
 
     return {
       characterList,

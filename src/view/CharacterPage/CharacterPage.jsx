@@ -3,7 +3,7 @@ import Pagination from "rc-pagination";
 import { debounce, isEmpty } from "lodash";
 
 import CharacterCard from "../../components/CharacterCard/CharacterCard";
-import { fetchCharacters } from "../../library/service/characters_services";
+import { fetchCharacters } from "../../library/service/charactersServices";
 import { KEYS, storage } from "../../library/storage";
 
 import InfoMessage from "../../components/InfoMessage/InfoMessage";
@@ -17,18 +17,17 @@ const CharacterPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCharacters, setTotalCharacters] = useState(0);
   const [selectedLimit, setSelectedLimit] = useState(false);
-  const [showSpinner, setShowSpinner] = useState(false);
+  const [searchLoader, setSearchLoader] = useState(false);
 
   const [selectedCharacterList, setSelectedCharacterList] = useState(
     storage.load(KEYS.SELECTED_CHARACTER_LIST) || []
   );
-  const getCharacters = async (limit, offset, searchValue = "") => {
+  const getCharacters = async (limit, offset, searchValue = false) => {
     const data = await fetchCharacters(limit, offset, searchValue);
     const { totalCharacters, characterList } = data;
-    setSearchQuery(searchValue);
     setCharacterList(characterList);
     setTotalCharacters(totalCharacters);
-    setShowSpinner(false);
+    setSearchLoader(false);
   };
 
   useEffect(() => {
@@ -54,14 +53,14 @@ const CharacterPage = () => {
   useEffect(
     () => {
       if (searchQuery) {
-        setShowSpinner(true);
+        setSearchLoader(true);
         debounceSearch.current(searchQuery);
       } else {
-        getCharacters(20, 0);
+        debounceSearch.current(false);
         setCurrentPage(1);
       }
     },
-    [searchQuery] // Only call effect if debounced search term changes
+    [searchQuery] // Handle debounce search
   );
 
   if (!characterList) {
@@ -81,7 +80,7 @@ const CharacterPage = () => {
           handleSearch={(ev) => {
             setSearchQuery(ev.target.value);
           }}
-          showSpinner={showSpinner}
+          showSpinner={searchLoader}
         />
         {characterListIsEmpty
           ? selectedCharacterList.map((character) => (

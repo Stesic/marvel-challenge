@@ -19,7 +19,7 @@ class Storage {
       }
       return JSON.parse(data)
     } catch (error) {
-      window.localStorage.removeItem(key)
+      localStorage.removeItem(key)
     }
   }
 }
