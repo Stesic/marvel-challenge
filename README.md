@@ -2,7 +2,9 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-Default characters (first 20) are fetched on page initial load. At that moment total characters number and first 20 characters are saved in the local state and displayed.
+Build project version can be seen on [Marvel Challenge](https://app-marvel-challenge.netlify.app/)
+
+Project is written in React.js. Default characters (first 20) are fetched on page initial load. At that moment total characters number and first 20 characters are saved in the local state and displayed.
 
 The search input is provided and characters are filtered on typing, 1 second after the user finishes typing. The characters are filtered on the backend side. If search results on provided search value are empty, bookmarked characters are displayed.
 
@@ -10,6 +12,6 @@ Users can bookmark (select/unselect) characters by clicking on the star icon on 
 
 Bellow section with the characters is the pagination section. Users can change the page by inserting the page number in the input field and press ENTER key, or by clicking on PREV/NEXT button. Pagination is hidden when bookmarked characters are displayed.
 
-- Project is written in React.js.
-- State management with React Hooks.
+- State management with React Hooks and user local storage.
 - For pagination is used rc-pagination library.
+- Deployed by Netlify
