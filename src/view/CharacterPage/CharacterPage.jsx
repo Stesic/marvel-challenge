@@ -2,10 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 import Pagination from "rc-pagination";
 import { debounce, isEmpty } from "lodash";
 
-import CharacterCard from "../../components/CharacterCard/CharacterCard";
 import { fetchCharacters } from "../../library/service/charactersServices";
 import { KEYS, storage } from "../../library/storage";
 
+import CharacterCard from "../../components/CharacterCard/CharacterCard";
 import InfoMessage from "../../components/InfoMessage/InfoMessage";
 import SearchInput from "../../components/SearchInput/SearchInput";
 import Layout from "../../components/Layout";
@@ -53,6 +53,7 @@ const CharacterPage = () => {
   useEffect(
     () => {
       if (searchQuery) {
+        setCurrentPage(1);
         setSearchLoader(true);
         debounceSearch.current(searchQuery);
       } else {
